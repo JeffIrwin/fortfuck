@@ -1,22 +1,8 @@
 
 !=======================================================================
 
-! This is a brainfuck compiler written in Fortran.  To compile and use
-! it:
-!
-!     Compile this compiler:
-!         gfortran -o fbc fbc.f90 -Wall -Wextra -Wno-tabs
-!
-!     Use this to compile one of the brainfuck sample programs:
-!         ./fbc samples/s0/add.b
-!
-!     Assemble the intermediate output (Debian needs -no-pie):
-!         gcc -o add samples/s0/add.s -no-pie
-!
-!     Run the compiled brainfuck program with piped input:
-!         echo "12" | ./addbf
-!         # expected output is "12c".
-
+! This is a brainfuck compiler written in Fortran.  See README.md for
+! build and usage instructions.
 
 ! The 6 simple brainfuck commands are encoded alphabetically as the
 ! following assembly subroutines:
@@ -34,10 +20,6 @@
 !
 ! For input/output (, and .), the C functions getc and putchar are used.
 ! The assembly code output by this compiler uses AT&T syntax.
-!
-! This build toolchain has been tested on Ubuntu 18.04.2 LTS (Bionic
-! Beaver) with gfortran GNU Fortran (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0
-! and gcc (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0.
 
 !=======================================================================
 
