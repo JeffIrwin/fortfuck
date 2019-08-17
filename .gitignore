@@ -2,7 +2,9 @@
 a.out
 fbc
 m.mod
+
 samples/*/*.s
 samples/*/output.txt
 samples/*/diff.txt
 
+junk/
