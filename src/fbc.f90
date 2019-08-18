@@ -437,6 +437,11 @@ integer function writetail(f)
 
 	! Output a linefeed ($0xa in ASCII).  This is not standard, but it
 	! helps readability.
+
+	!! Add carriage return for Windows line endings
+	!write(f, '(a)') "mov $0xd, %rdi"
+	!write(f, '(a)') "call putchar"
+
 	write(f, '(a)') "mov $0xa, %rdi"
 	write(f, '(a)') "call putchar"
 
