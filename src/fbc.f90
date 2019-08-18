@@ -29,7 +29,8 @@ module m
 
 	implicit none
 
-	character*(*), parameter :: this = 'fbc'
+	character, parameter :: lf = char(10)
+
 	character, parameter :: &
 			dot     = '.',      &
 			comma   = ',',      &
@@ -39,6 +40,34 @@ module m
 			greater = '>',      &
 			bra     = '[',      &
 			ket     = ']'
+
+	character(len = *), parameter :: this = 'fbc'
+	character(len = *), parameter :: &
+			dotsub     = "d",            &
+			commasub   = "c",            &
+			minussub   = "m",            &
+			plussub    = "p",            &
+			lesssub    = "l",            &
+			greatersub = "g"
+
+	character(len = *), parameter ::           &
+			dotasm     =              &
+			"mov (%rbx), %rdi"//lf//  &
+			"call putchar",           &
+			commaasm   =              &
+			"mov stdin, %rdi"//lf//   &
+			"call getc"      //lf//   &
+			"mov %rax, (%rbx)",       &
+			minusasm   =              &
+			"decq (%rbx)",            &
+			plusasm    =              &
+			"incq (%rbx)",            &
+			lessasm    =              &
+			"add $0x8, %rbx",         &
+			greaterasm =              &
+			"sub $0x8, %rbx"//lf//    &
+			"cmp %rsp, %rbx"//lf//    &  ! Are we moving into the stack, which needs to be used for other things (e.g. subroutine calls, getc, putchar, ...) ?
+			"jle padstack"
 
 	integer, save :: debug = 0
 
@@ -59,6 +88,7 @@ module m
 
 	type brainfuck
 		character(len = :), allocatable :: ifile, ofile
+		logical :: inline
 	end type brainfuck
 
 	! To do?  Make a file object including name and unit number,
@@ -139,6 +169,7 @@ integer function parseargs(bf)
 	if (debug > 0) print *, 'starting parseargs...'
 
 	parseargs = ERR_PARSEARGS
+	bf%inline = .true.
 	dummy = ''
 	argc = command_argument_count()
 
@@ -154,7 +185,8 @@ integer function parseargs(bf)
 		if (debug > 1) print *, 'argv = ', argv
 
 		! TODO:  add optimization options, output name option, verbosity
-		! option, compile/run time check options, help option, ...
+		! option, compile/run time check options, help option, inline
+		! option, ...
 
 		if (.not. ifiledefined) then
 			ifiledefined = .true.
@@ -244,23 +276,57 @@ integer function compile(bf)
 			! isolated to a single character or line, especially in brainfuck
 			! which doesn't care about source lines.
 
-			! TODO:  options for compiler inlining will go in these
-			! branches.
-
-			! TODO:  parameterize subroutine names (d, c, m, ...).
-
 			if      (c == dot    ) then
-				write(fo, '(a)') "call d"
+
+				if (bf%inline) then
+					write(fo, '(a)') dotasm
+				else
+					write(fo, '(a)') "call "//dotsub
+				end if
+
 			else if (c == comma  ) then
-				write(fo, '(a)') "call c"
+
+				if (bf%inline) then
+					write(fo, '(a)') commaasm
+				else
+					write(fo, '(a)') "call "//commasub
+				end if
+
 			else if (c == minus  ) then
-				write(fo, '(a)') "call m"
+
+				if (bf%inline) then
+					write(fo, '(a)') minusasm
+				else
+					write(fo, '(a)') "call "//minussub
+				end if
+
 			else if (c == plus   ) then
-				write(fo, '(a)') "call p"
+
+				if (bf%inline) then
+					write(fo, '(a)') plusasm
+				else
+					write(fo, '(a)') "call "//plussub
+				end if
+
 			else if (c == less   ) then
-				write(fo, '(a)') "call l"
+
+				if (bf%inline) then
+					write(fo, '(a)') lessasm
+				else
+					write(fo, '(a)') "call "//lesssub
+				end if
+
 			else if (c == greater) then
-				write(fo, '(a)') "call g"
+
+				!! This one is tricker to inline since it includes a jump to
+				!! padstack.  Padstack will need to be inlined too (with some
+				!! mangling to avoid duplicate padstacks).
+				!if (bf%inline) then
+				!	write(fo, '(a)') greaterasm
+				!else
+					write(fo, '(a)') "call "//greatersub
+				!end if
+
 			else if (c == bra    ) then
 
 				ibra = ibra + 1
@@ -452,52 +518,36 @@ integer function writetail(f)
 
 	write(f, '(a)') "ret"
 
-	! TODO:  optionally inline these assembly subroutines instead of
-	! writing them here.
-
-	write(f, '(a)') "d:"
+	! TODO:  return if inlining.  Need to fix padstack.
 
 	! Print the current data byte
-	write(f, '(a)') "mov (%rbx), %rdi"
-	write(f, '(a)') "call putchar"
+	write(f, '(a)') dotsub//":"
+	write(f, '(a)') dotasm
 	write(f, '(a)') "ret"
-
-	write(f, '(a)') "c:"
 
 	! Get a byte of data from standard input
-	write(f, '(a)') "mov stdin, %rdi"
-	write(f, '(a)') "call getc"
-	write(f, '(a)') "mov %rax, (%rbx)"
-
+	write(f, '(a)') commasub//":"
+	write(f, '(a)') commaasm
 	write(f, '(a)') "ret"
-
-	write(f, '(a)') "m:"
 
 	! Decrement data value
-	write(f, '(a)') "decq (%rbx)"
+	write(f, '(a)') minussub//":"
+	write(f, '(a)') minusasm
 	write(f, '(a)') "ret"
-
-	write(f, '(a)') "p:"
 
 	! Increment data value
-	write(f, '(a)') "incq (%rbx)"
+	write(f, '(a)') plussub//":"
+	write(f, '(a)') plusasm
 	write(f, '(a)') "ret"
-
-	write(f, '(a)') "l:"
 
 	! Move the data pointer to the left
-	write(f, '(a)') "add $0x8, %rbx"
+	write(f, '(a)') lesssub//":"
+	write(f, '(a)') lessasm
 	write(f, '(a)') "ret"
 
-	write(f, '(a)') "g:"
-
 	! Move the data pointer to the right
-	write(f, '(a)') "sub $0x8, %rbx"
-
-	! Are we moving into the stack, which needs to be used for other
-	! things (e.g. subroutine calls, getc, putchar, ...) ?
-	write(f, '(a)') "cmp %rsp, %rbx"
-	write(f, '(a)') "jle padstack"
+	write(f, '(a)') greatersub//":"
+	write(f, '(a)') greaterasm
 	write(f, '(a)') "ret"
 
 	write(f, '(a)') "padstack:"
