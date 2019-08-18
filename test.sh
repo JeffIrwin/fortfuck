@@ -32,7 +32,7 @@ for b in $(find ./samples/*/*.b); do
 	gcc "$s" ${NOPIE}
 	rm "$d"/output.txt
 	./a.out < "$d"/input.txt > "$d"/output.txt
-	diff "$d"/expected-output.txt "$d"/output.txt > "$d"/diff.txt
+	diff -w "$d"/expected-output.txt "$d"/output.txt > "$d"/diff.txt
 	if [[ "$?" == "1" ]]; then
 		nfail=$((nfail + 1))
 		echo "test.sh:  error:  diff for $b:"
