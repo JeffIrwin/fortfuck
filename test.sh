@@ -15,7 +15,7 @@ if [[ -e "/etc/debian_version" ]]; then
 	NOPIE=-no-pie
 fi
 
-for b in $(find ./samples/*/*.b); do
+for b in ./samples/*/*.b; do
 
 	d=$(dirname "$b")
 	s="${b%.b}.s"
