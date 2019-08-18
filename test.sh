@@ -2,7 +2,10 @@
 
 ./build.sh
 
+echo "==============================================================================="
+echo ""
 echo "Running tests..."
+echo ""
 
 nfail=0
 ntotal=0
@@ -38,6 +41,7 @@ for b in $(find ./samples/*/*.b); do
 
 done
 
+echo ""
 echo "==============================================================================="
 echo ""
 echo "Total number of tests  = $ntotal"

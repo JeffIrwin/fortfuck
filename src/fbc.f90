@@ -533,17 +533,21 @@ program main
 
 	type(brainfuck) :: bf
 
-	write(*,*)
-	write(*,*) 'Starting brainfuck compiler...'
-	write(*,*)
+	if (debug > 0) then
+		write(*,*)
+		write(*,*) 'Starting brainfuck compiler...'
+		write(*,*)
+	end if
 
 	io = parseargs(bf)
 	if (io /= 0) call exit(io)
 	io = compile(bf)
 	if (io /= 0) call exit(io)
 
-	write(*,*) 'Done!'
-	write(*,*)
+	if (debug > 0) then
+		write(*,*) 'Done!'
+		write(*,*)
+	end if
 
 	call exit(SUCCESS)
 
