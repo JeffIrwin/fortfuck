@@ -318,7 +318,7 @@ integer function compile(bf)
 
 			else if (c == greater) then
 
-				!! This one is tricker to inline since it includes a jump to
+				!! TODO:  this one is trickier to inline since it includes a jump to
 				!! padstack.  Padstack will need to be inlined too (with some
 				!! mangling to avoid duplicate padstacks).
 				!if (bf%inline) then
