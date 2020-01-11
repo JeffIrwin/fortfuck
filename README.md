@@ -1,3 +1,4 @@
+![](https://github.com/JeffIrwin/fortfuck/workflows/CI/badge.svg)
 # fortfuck
 *A brainfuck-to-assembly translator written in Fortran*
 
