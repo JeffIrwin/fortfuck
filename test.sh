@@ -49,3 +49,4 @@ echo "Number of failed tests = $nfail"
 echo "Done!"
 echo ""
 
+exit $nfail
