@@ -1,15 +1,24 @@
+
 name: CI
 
 on: [push]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        #os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v1
-    - name: Build and test
+    - if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get install gfortran
+    - name: Clean, build, and test
+      run: |
+        git submodule update --init --recursive
         bash ./test.sh
+
