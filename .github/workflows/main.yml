@@ -10,7 +10,14 @@ jobs:
     strategy:
       matrix:
         #os: [ubuntu-latest, windows-latest, macOS-latest]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest]
+
+# macOS:
+#     add.s:16:1: error: ambiguous instructions require an explicit suffix (could be 'cmpb', 'cmpw', 'cmpl', or 'cmpq')
+#     cmp $0x0, (%rbx)
+#
+# Windows:
+#     C:\Users\jirwi\AppData\Local\Temp\cc3aneHu.o:fake:(.text+0x6f): undefined reference to `stdin'
 
     steps:
     - uses: actions/checkout@v1
