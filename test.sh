@@ -2,7 +2,7 @@
 
 rm samples/*/a.out
 
-./testfbc.sh
-./testgcc.sh
-./testa.sh
+./testfbc.sh || exit
+./testgcc.sh || exit
+./testa.sh   || exit
 
