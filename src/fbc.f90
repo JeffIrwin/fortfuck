@@ -97,6 +97,10 @@ module m
 	type stack
 		integer, allocatable :: s(:)
 		integer :: n, i
+	contains
+		procedure :: initialize => stack_initialize
+		procedure :: pop        => stack_pop
+		procedure :: push       => stack_push
 	end type stack
 
 contains
@@ -226,7 +230,8 @@ integer function compile(bf)
 
 	compile = ERR_COMPILE
 	ibra = -1
-	io = newstack(brackets)
+
+	io = brackets%initialize()
 	if (io /= 0) return
 
 	inquire(file = bf%ifile, exist = fexist)
@@ -330,7 +335,7 @@ integer function compile(bf)
 			else if (c == bra    ) then
 
 				ibra = ibra + 1
-				io = push(brackets, ibra)
+				io = brackets%push(ibra)
 				if (io /= 0) return
 
 				write(fo, '(a)') "cmp $0x0, (%rbx)"
@@ -345,7 +350,7 @@ integer function compile(bf)
 					return
 				end if
 
-				io = pop(brackets, iket)
+				io = brackets%pop(iket)
 				if (io /= 0) return
 
 				write(fo, '(a)') "cmp $0x0, (%rbx)"
@@ -378,78 +383,77 @@ end function compile
 
 !=======================================================================
 
-integer function newstack(st)
+integer function stack_initialize(this) result(io)
 
-	integer :: io
-	type(stack) :: st
+	class(stack) :: this
 
-	newstack = ERR_NEWSTACK
-	st%n = 1
-	st%i = 0
-	allocate(st%s(st%n), stat = io)
+	io = ERR_NEWSTACK
+	this%n = 1
+	this%i = 0
+	allocate(this%s(this%n), stat = io)
 	if (io /= 0) then
-		call logger(newstack)
+		call logger(io)
 		return
 	end if
-	st%s = 0
-	newstack = SUCCESS
+	this%s = 0
+	io = SUCCESS
 
-end function newstack
+end function stack_initialize
 
 !=======================================================================
 
-integer function pop(st, poppedval)
+integer function stack_pop(this, poppedval) result(io)
 
 	integer :: poppedval
-	type(stack) :: st
+	class(stack) :: this
 
-	pop = ERR_POP
-	if (st%i < 1) then
-		call logger(pop)
+	io = ERR_POP
+	if (this%i < 1) then
+		call logger(io)
 		return
 	end if
 
-	poppedval = st%s(st%i)
-	st%i = st%i - 1
-	pop = SUCCESS
+	poppedval = this%s(this%i)
+	this%i = this%i - 1
+	io = SUCCESS
 
-end function pop
+end function stack_pop
 
 !=======================================================================
 
-integer function push(st, pushedval)
+integer function stack_push(this, pushedval) result(io)
 
-	integer :: io, pushedval, ntmp
+	integer :: iol, pushedval, ntmp
 	integer, allocatable :: tmp(:)
-	type(stack) :: st
+	class(stack) :: this
 
-	push = ERR_PUSH
+	io = ERR_PUSH
 
-	st%i = st%i + 1
-	!print *, 'st%i = ', st%i
-	!print *, 'st%n = ', st%n
-	if (st%i > st%n) then
+	this%i = this%i + 1
+	!print *, 'this%i = ', this%i
+	!print *, 'this%n = ', this%n
+	if (this%i > this%n) then
 		!print *, 'realloc'
 
-		ntmp = int(1.1 * st%i + 1)
+		ntmp = int(1.1 * this%i + 1)
 
-		allocate(tmp(ntmp), stat = io)
-		if (io /= 0) then
-			call logger(push)
+		allocate(tmp(ntmp), stat = iol)
+		if (iol /= 0) then
+			call logger(io)
 			return
 		end if
 
-		tmp(1: st%n) = st%s(1: st%n)
-		deallocate(st%s)
-		call move_alloc(tmp, st%s)
-		st%n = ntmp
+		tmp(1: this%n) = this%s(1: this%n)
+		deallocate(this%s)
+		call move_alloc(tmp, this%s)
+		this%n = ntmp
 	end if
 	!print *, 'pushedval = ', pushedval
 
-	st%s(st%i) = pushedval
-	push = SUCCESS
+	this%s(this%i) = pushedval
+	io = SUCCESS
 
-end function push
+end function stack_push
 
 !=======================================================================
 
