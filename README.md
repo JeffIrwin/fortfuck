@@ -2,6 +2,8 @@
 # fortfuck
 *A brainfuck-to-assembly translator written in Fortran*
 
+Tests stopped passing on 2021-05-01.  There seems to be some incompatible change in the toolchain, as the assembly output is the same as before and reverting does not help.
+
 This is a brainfuck compiler written in Fortran.  To compile and use it:
 
 ## Download
